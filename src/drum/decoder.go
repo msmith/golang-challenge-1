@@ -39,7 +39,7 @@ func DecodeFile(path string) (*Pattern, error) {
 	return Decode(f)
 }
 
-// DecodeFile will read from a reader and return the Pattern
+// Decode will read from a reader and return the Pattern
 func Decode(reader io.Reader) (*Pattern, error) {
 	return new(fileDecoder).decode(reader)
 }

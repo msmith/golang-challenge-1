@@ -2,6 +2,9 @@
 
 A solution to [Go Challenge 1](http://golang-challenge.com/go-challenge1/)
 
+Michael Smith
+https://github.com/msmith
+
 ## Running the tests
 
 ```
