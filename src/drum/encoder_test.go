@@ -28,7 +28,7 @@ func TestEncodeFile(t *testing.T) {
 			t.Fatalf("something went wrong reading file %s - %v", file, err)
 		}
 
-		pattern, err := Decode(bytes.NewReader(fileBytes))
+		pattern, err := NewDecoder().Decode(bytes.NewReader(fileBytes))
 		if err != nil {
 			t.Fatalf("something went wrong decoding %s - %v", file, err)
 		}

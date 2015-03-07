@@ -30,11 +30,18 @@ func Encode(pattern *Pattern, writer io.Writer) error {
 	// We will need to get its length before writing the file header
 	buff := new(bytes.Buffer)
 
-	var ph patternHeader
-	copy(ph.HwVers[0:], []byte(pattern.Version))
-	ph.Tempo = pattern.Tempo
+	var h header
 
-	if err := binary.Write(buff, binary.LittleEndian, ph); err != nil {
+	// write HW Vers
+	hwVers := make([]byte, 32)
+	copy(hwVers, []byte(pattern.Version))
+	if _, err := buff.Write(hwVers); err != nil {
+		return err
+	}
+
+	// write Tempo
+	h.Tempo = pattern.Tempo
+	if err := binary.Write(buff, binary.LittleEndian, &h.Tempo); err != nil {
 		return err
 	}
 
@@ -69,11 +76,14 @@ func Encode(pattern *Pattern, writer io.Writer) error {
 		}
 	}
 
-	// Write file header
-	var fh fileHeader
-	copy(fh.Signature[0:], []byte(fileSignature))
-	fh.Length = uint64(buff.Len())
-	if err := binary.Write(writer, binary.BigEndian, fh); err != nil {
+	// Write file signature
+	if _, err := writer.Write(fileSignature); err != nil {
+		return err
+	}
+
+	// Write data length
+	h.Length = uint64(buff.Len())
+	if err := binary.Write(writer, binary.BigEndian, &h.Length); err != nil {
 		return err
 	}
 

@@ -109,12 +109,12 @@ func benchmark(filename string, b *testing.B) {
 	data, _ := ioutil.ReadAll(f)
 
 	// reuse the same decoder
-	var d fileDecoder
+	d := NewDecoder()
 	r := bytes.NewReader(data)
 
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		r.Seek(0, 0)
-		d.decode(r)
+		d.Decode(r)
 	}
 }

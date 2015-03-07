@@ -24,7 +24,7 @@ import (
 //   0-255 bytes - track name
 //      16 bytes - track steps (1 = play sound, 0 = silence)
 
-const fileSignature = "SPLICE"
+var fileSignature = []byte("SPLICE")
 
 // DecodeFile will read a file and return the Pattern
 func DecodeFile(path string) (*Pattern, error) {
@@ -36,33 +36,56 @@ func DecodeFile(path string) (*Pattern, error) {
 	defer f.Close()
 
 	// decode the file's contents
-	return Decode(f)
+	return NewDecoder().Decode(f)
 }
 
-// Decode will read from a reader and return the Pattern
-func Decode(reader io.Reader) (*Pattern, error) {
-	return new(fileDecoder).decode(reader)
+func NewDecoder() *decoder {
+	return &decoder{
+		h: header{
+			Signature: make([]byte, 6),
+			HwVers:    make([]byte, 32),
+		},
+	}
 }
 
-type fileDecoder struct {
-	fh fileHeader
-	ph patternHeader
+type decoder struct {
+	h header
 	td trackDecoder
 }
 
-func (d *fileDecoder) decode(reader io.Reader) (*Pattern, error) {
+// Decode will read from a reader and return the Pattern
+func (d *decoder) Decode(reader io.Reader) (*Pattern, error) {
 	// Decode file header
-	if err := d.fh.decode(reader); err != nil {
+	if _, err := io.ReadFull(reader, d.h.Signature[:]); err != nil {
 		return nil, err
 	}
 
-	// Create a limited reader to read more more than fh.Length bytes
-	dataReader := io.LimitReader(reader, int64(d.fh.Length))
+	// Ensure that signature matches the expected value
+	if !bytes.Equal(d.h.Signature[:], fileSignature) {
+		return nil, errors.New("SPLICE file signature not found")
+	}
 
-	// Decode pattern header
-	pattern, err := d.ph.decode(dataReader)
-	if err != nil {
+	if err := binary.Read(reader, binary.BigEndian, &d.h.Length); err != nil {
 		return nil, err
+	}
+
+	// Create a limited reader to read more more than h.Length bytes
+	dataReader := io.LimitReader(reader, int64(d.h.Length))
+
+	// HW Version
+	if _, err := io.ReadFull(dataReader, d.h.HwVers); err != nil {
+		return nil, err
+	}
+
+	// Tempo
+	if err := binary.Read(dataReader, binary.LittleEndian, &d.h.Tempo); err != nil {
+		return nil, err
+	}
+
+	// Pattern
+	pattern := &Pattern{
+		Version: string(d.h.HwVers[:bytes.IndexByte(d.h.HwVers, 0)]),
+		Tempo:   d.h.Tempo,
 	}
 
 	// Decode all the Tracks
@@ -81,39 +104,19 @@ func (d *fileDecoder) decode(reader io.Reader) (*Pattern, error) {
 	return pattern, nil
 }
 
-type fileHeader struct {
-	Signature [6]byte
+type header struct {
+	Signature []byte
 	Length    uint64
+	HwVers    []byte
+	Tempo     float32
 }
 
-func (fh *fileHeader) decode(reader io.Reader) error {
-	if err := binary.Read(reader, binary.BigEndian, fh); err != nil {
+func (h *header) decodePatternHeader(reader io.Reader) error {
+	if err := binary.Read(reader, binary.LittleEndian, h); err != nil {
 		return err
 	}
 
-	// Ensure that signature matches the expected value
-	if string(fh.Signature[:len(fileSignature)]) != fileSignature {
-		return errors.New("SPLICE file signature not found")
-	}
-
 	return nil
-}
-
-type patternHeader struct {
-	HwVers [32]byte
-	Tempo  float32
-}
-
-func (ph *patternHeader) decode(reader io.Reader) (*Pattern, error) {
-	if err := binary.Read(reader, binary.LittleEndian, ph); err != nil {
-		return nil, err
-	}
-
-	p := &Pattern{
-		Version: string(ph.HwVers[:bytes.IndexByte(ph.HwVers[:], 0)]),
-		Tempo:   ph.Tempo,
-	}
-	return p, nil
 }
 
 type trackDecoder struct {
