@@ -49,7 +49,7 @@ func NewDecoder() *decoder {
 }
 
 type decoder struct {
-	h header
+	h  header
 	td trackDecoder
 }
 
@@ -109,14 +109,6 @@ type header struct {
 	Length    uint64
 	HwVers    []byte
 	Tempo     float32
-}
-
-func (h *header) decodePatternHeader(reader io.Reader) error {
-	if err := binary.Read(reader, binary.LittleEndian, h); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 type trackDecoder struct {
