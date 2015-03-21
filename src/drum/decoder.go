@@ -61,7 +61,7 @@ func (d *decoder) Decode(reader io.Reader) (*Pattern, error) {
 	}
 
 	// Ensure that signature matches the expected value
-	if !bytes.Equal(d.h.Signature[:], fileSignature) {
+	if !bytes.Equal(d.h.Signature, fileSignature) {
 		return nil, errors.New("SPLICE file signature not found")
 	}
 
