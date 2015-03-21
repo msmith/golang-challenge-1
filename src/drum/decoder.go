@@ -69,7 +69,7 @@ func (d *decoder) Decode(reader io.Reader) (*Pattern, error) {
 		return nil, err
 	}
 
-	// Create a limited reader to read more more than h.Length bytes
+	// Create a limited reader to read no more than h.Length bytes
 	dataReader := io.LimitReader(reader, int64(d.h.Length))
 
 	// HW Version
