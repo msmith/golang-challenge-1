@@ -143,7 +143,7 @@ func (t *trackDecoder) decode(reader io.Reader) (*Track, error) {
 
 	// convert step bytes into booleans
 	for i, val := range steps {
-		t.track.Steps[i] = (val > 0)
+		t.track.Steps[i] = (val != 0)
 	}
 
 	return &(t.track), nil
