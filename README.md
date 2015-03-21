@@ -17,12 +17,12 @@ ok  	drum	0.004s
 ```
 $ go test -bench=. -benchmem drum
 PASS
-Benchmark1	  200000	      6936 ns/op	     856 B/op	      41 allocs/op
-Benchmark2	  300000	      5256 ns/op	     648 B/op	      32 allocs/op
-Benchmark3	  200000	      6972 ns/op	     856 B/op	      41 allocs/op
-Benchmark4	  300000	      5249 ns/op	     648 B/op	      32 allocs/op
-Benchmark5	  500000	      4137 ns/op	     472 B/op	      23 allocs/op
-ok  	drum	8.305s
+Benchmark1	  300000	      4893 ns/op	     712 B/op	      35 allocs/op
+Benchmark2	  500000	      3594 ns/op	     504 B/op	      26 allocs/op
+Benchmark3	  300000	      4918 ns/op	     712 B/op	      35 allocs/op
+Benchmark4	  500000	      3690 ns/op	     512 B/op	      26 allocs/op
+Benchmark5	 1000000	      2313 ns/op	     328 B/op	      17 allocs/op
+ok  	drum	9.104s
 ```
 
 ## Building & running the decoder
